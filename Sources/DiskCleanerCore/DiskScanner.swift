@@ -1,6 +1,6 @@
 import Darwin
 import Foundation
-import Synchronization
+import os
 
 public struct ScanOptions: Sendable {
     /// Descend into directories that are mount points of other volumes.
@@ -100,14 +100,14 @@ struct DirectoryJob: Sendable {
 }
 
 private final class Flag: Sendable {
-    private let value = Atomic<Bool>(false)
-    var isSet: Bool { value.load(ordering: .relaxed) }
-    func set() { value.store(true, ordering: .relaxed) }
+    private let value = OSAllocatedUnfairLock(initialState: false)
+    var isSet: Bool { value.withLock { $0 } }
+    func set() { value.withLock { $0 = true } }
 }
 
 /// File IDs of hard-linked files already counted, so each inode's space is counted once.
 private final class HardLinkRegistry: Sendable {
-    private let seen = Mutex<Set<UInt64>>([])
+    private let seen = OSAllocatedUnfairLock(initialState: Set<UInt64>())
 
     func isFirstLink(_ fileID: UInt64) -> Bool {
         seen.withLock { $0.insert(fileID).inserted }

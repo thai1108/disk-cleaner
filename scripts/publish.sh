@@ -1,6 +1,6 @@
 #!/bin/sh
 # Publishes the DMG made by scripts/release.sh: uploads it as a GitHub release of
-# <owner>/disk-cleaner-releases and points the cask in <owner>/homebrew-tap at it, so that
+# <owner>/disk-cleaner and points the cask in <owner>/homebrew-tap at it, so that
 # `brew install --cask <owner>/tap/disk-cleaner` installs it.
 #
 # Usage: scripts/publish.sh [--dry-run]   # --dry-run only prints the cask
@@ -12,7 +12,7 @@ DRY_RUN=0
 [ "${1:-}" = "--dry-run" ] && DRY_RUN=1
 
 OWNER="${GITHUB_USER:-thai1108}"
-RELEASES_REPO="$OWNER/disk-cleaner-releases"
+APP_REPO="$OWNER/disk-cleaner"
 TAP_REPO="$OWNER/homebrew-tap"
 CASK_PATH="Casks/disk-cleaner.rb"
 BUNDLE_ID="$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" Resources/Info.plist)"
@@ -29,18 +29,32 @@ if [ "$DRY_RUN" = 0 ] && ! spctl --assess --type open --context context:primary-
     exit 1
 fi
 
+# The release tag must point at the commit the DMG was built from.
+if [ "$DRY_RUN" = 0 ]; then
+    if ! git diff --quiet HEAD; then
+        echo "error: commit your changes before publishing" >&2
+        exit 1
+    fi
+    git fetch --quiet origin
+    if [ -z "$(git branch --remotes --contains HEAD)" ]; then
+        echo "error: push $(git rev-parse --short HEAD) before publishing" >&2
+        exit 1
+    fi
+fi
+
 SHA256="$(shasum -a 256 "$DMG" | awk '{ print $1 }')"
 CASK="$(cat <<RUBY
 cask "disk-cleaner" do
   version "$VERSION"
   sha256 "$SHA256"
 
-  url "https://github.com/$RELEASES_REPO/releases/download/v#{version}/DiskCleaner-#{version}.dmg"
+  url "https://github.com/$APP_REPO/releases/download/v#{version}/DiskCleaner-#{version}.dmg"
   name "Disk Cleaner"
   desc "Disk space analyzer and cleaner"
-  homepage "https://github.com/$RELEASES_REPO"
+  homepage "https://github.com/$APP_REPO"
 
-  depends_on macos: :tahoe
+  depends_on arch: :arm64
+  depends_on macos: :sonoma
 
   app "Disk Cleaner.app"
 
@@ -60,7 +74,7 @@ fi
 GH_TOKEN="$(gh auth token --user "$OWNER")"
 export GH_TOKEN
 
-gh release create "v$VERSION" "$DMG" --repo "$RELEASES_REPO" --title "Disk Cleaner $VERSION" \
+gh release create "v$VERSION" "$DMG" --repo "$APP_REPO" --target "$(git rev-parse HEAD)" --title "Disk Cleaner $VERSION" \
     --notes "Install with Homebrew: \`brew install --cask $OWNER/tap/disk-cleaner\`, or download the DMG below. SHA-256: \`$SHA256\`"
 
 # Updating through the API needs the current file's blob SHA, unless the cask is new.

@@ -22,11 +22,12 @@ A disk space analyzer and cleaner for macOS: scan a disk or folder, see what tak
 brew install --cask thai1108/tap/disk-cleaner
 ```
 
-Or download the DMG from [the releases](https://github.com/thai1108/disk-cleaner-releases/releases).
+Or download the DMG from [the releases](https://github.com/thai1108/disk-cleaner/releases).
 
 ## Requirements
 
-macOS 26+ (Liquid Glass UI), Xcode 26+ (Swift 6.2).
+A Mac with Apple silicon and macOS 14+ (the Liquid Glass look needs macOS 26); Xcode 26+
+(Swift 6.2) to build.
 
 ## Build & run
 
@@ -66,11 +67,10 @@ team's certificate (set `TEAM_ID` to change it).
 Each release:
 
 1. Bump `CFBundleShortVersionString` and `CFBundleVersion` in `Resources/Info.plist`.
-2. Run `NOTARY_PROFILE=disk-cleaner-notary ./scripts/release.sh`. It builds a universal app,
+2. Run `NOTARY_PROFILE=disk-cleaner-notary ./scripts/release.sh`. It builds an Apple silicon app,
    signs it with Developer ID and the hardened runtime, notarizes and staples the app and
    the DMG, and checks both with Gatekeeper.
-3. Run `./scripts/publish.sh`. It uploads the DMG as release `v<version>` of
-   [thai1108/disk-cleaner-releases](https://github.com/thai1108/disk-cleaner-releases) and
+3. Run `./scripts/publish.sh`. It uploads the DMG as release `v<version>` of this repo and
    updates the cask in [thai1108/homebrew-tap](https://github.com/thai1108/homebrew-tap), using
    the `thai1108` gh account without switching the active one. `--dry-run` prints the cask.
 

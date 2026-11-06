@@ -28,7 +28,7 @@ cp "$ICON" "$APP/Contents/Resources/AppIcon.icns"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 # Compiles the accent color (NSAccentColorName in Info.plist) into Assets.car.
 xcrun actool Resources/Assets.xcassets --compile "$APP/Contents/Resources" \
-    --platform macosx --minimum-deployment-target 26.0 \
+    --platform macosx --minimum-deployment-target 14.0 \
     --output-partial-info-plist build/assets-info.plist > /dev/null
 
 # A certificate keeps the app's identity stable across rebuilds, so macOS remembers the Full

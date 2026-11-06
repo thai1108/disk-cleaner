@@ -36,12 +36,12 @@ struct ScanningView: View {
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
                         .frame(maxWidth: 520)
-                        .glassEffect(.regular, in: .capsule)
+                        .glassBackground(in: .capsule)
                         .padding(.top, 6)
                 }
 
                 Button("Cancel", role: .cancel) { model.cancelScan() }
-                    .buttonStyle(.glass)
+                    .glassButtonStyle()
                     .controlSize(.large)
                     .keyboardShortcut(.cancelAction)
             }

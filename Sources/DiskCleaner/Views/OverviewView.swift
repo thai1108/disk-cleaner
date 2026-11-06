@@ -20,7 +20,7 @@ struct OverviewView: View {
                             Label("Scan \(target.title)", systemImage: "magnifyingglass")
                                 .padding(.horizontal, 18)
                         }
-                        .buttonStyle(.glassProminent)
+                        .prominentGlassButtonStyle()
                         .tint(theme.color)
                         .controlSize(.extraLarge)
                         .keyboardShortcut(.defaultAction)
@@ -56,7 +56,7 @@ struct OverviewView: View {
                 .font(.system(size: 40, weight: .regular))
                 .foregroundStyle(theme.color)
                 .frame(width: 88, height: 88)
-                .glassEffect(.regular, in: .circle)
+                .glassBackground(in: .circle)
             VStack(spacing: 4) {
                 Text(target.title)
                     .font(.largeTitle.weight(.bold))

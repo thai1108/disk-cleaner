@@ -46,7 +46,7 @@ struct CleanupBar: View {
                     Label("Delete \(analysis.cleanupList.totalSize.byteString)", systemImage: "trash")
                 }
             }
-            .buttonStyle(.glassProminent)
+            .prominentGlassButtonStyle()
             .tint(.red)
             .controlSize(.large)
             .disabled(analysis.cleanupList.isEmpty || analysis.isDeleting)
@@ -54,7 +54,7 @@ struct CleanupBar: View {
         .padding(.leading, 18)
         .padding(.trailing, 8)
         .padding(.vertical, 8)
-        .glassEffect(isDropTargeted ? .regular.tint(theme.color.opacity(0.25)) : .regular, in: .capsule)
+        .glassBackground(in: .capsule, tint: isDropTargeted ? theme.color.opacity(0.25) : nil)
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
         .dropDestination(for: URL.self) { urls, _ in
@@ -141,12 +141,12 @@ struct CleanupToast: View {
                 .labelStyle(.iconOnly)
                 .buttonStyle(.borderless)
         }
-        .buttonStyle(.glass)
+        .glassButtonStyle()
         .padding(.leading, 16)
         .padding(.trailing, 12)
         .padding(.vertical, 10)
         .frame(maxWidth: 680)
-        .glassEffect(.regular, in: .capsule)
+        .glassBackground(in: .capsule)
         .padding(.horizontal, 20)
         // Leaves time to undo; a plain delete only needs a quick confirmation.
         .task(id: report.id) {

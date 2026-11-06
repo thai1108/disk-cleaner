@@ -45,7 +45,7 @@ struct QuickCleanView: View {
                         Label("Clean \(quickClean.selectedSize.byteString)", systemImage: "sparkles")
                     }
                 }
-                .buttonStyle(.glassProminent)
+                .prominentGlassButtonStyle()
                 .tint(theme.color)
                 .controlSize(.large)
                 .disabled(quickClean.selectedSize == 0 || quickClean.isCleaning || quickClean.isMeasuring)
@@ -54,7 +54,7 @@ struct QuickCleanView: View {
             .padding(.trailing, 8)
             .padding(.vertical, 8)
             .frame(maxWidth: 780)
-            .glassEffect(.regular, in: .capsule)
+            .glassBackground(in: .capsule)
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
         }
@@ -85,7 +85,7 @@ struct QuickCleanView: View {
                 .font(.system(size: 30))
                 .foregroundStyle(theme.color)
                 .frame(width: 68, height: 68)
-                .glassEffect(.regular, in: .circle)
+                .glassBackground(in: .circle)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Quick Clean")
                     .font(.largeTitle.weight(.bold))

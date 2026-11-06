@@ -143,3 +143,39 @@ struct Backdrop: View {
         .ignoresSafeArea()
     }
 }
+
+// Liquid Glass needs macOS 26; earlier systems get a material background and standard buttons.
+extension View {
+    @ViewBuilder
+    func glassBackground(in shape: some Shape, tint: Color? = nil) -> some View {
+        if #available(macOS 26, *) {
+            glassEffect(.regular.tint(tint), in: shape)
+        } else {
+            background {
+                ZStack {
+                    shape.fill(.regularMaterial)
+                    if let tint { shape.fill(tint) }
+                    shape.stroke(.separator, lineWidth: 0.5)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    func glassButtonStyle() -> some View {
+        if #available(macOS 26, *) {
+            buttonStyle(.glass)
+        } else {
+            buttonStyle(.bordered)
+        }
+    }
+
+    @ViewBuilder
+    func prominentGlassButtonStyle() -> some View {
+        if #available(macOS 26, *) {
+            buttonStyle(.glassProminent)
+        } else {
+            buttonStyle(.borderedProminent)
+        }
+    }
+}

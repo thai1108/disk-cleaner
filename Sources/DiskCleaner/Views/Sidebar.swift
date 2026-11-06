@@ -45,7 +45,7 @@ struct Sidebar: View {
                     }
                     .help("Settings (⌘,)")
                 }
-                .buttonStyle(.glass)
+                .glassButtonStyle()
                 .controlSize(.large)
             }
             .padding(12)

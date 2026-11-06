@@ -1,7 +1,7 @@
 #!/bin/sh
-# Builds build/DiskCleaner-<version>.dmg for distribution outside the App Store: a universal
-# app signed with Developer ID and the hardened runtime, notarized by Apple and stapled, so
-# it opens without Gatekeeper warnings. One-time setup is described in README › Releasing.
+# Builds build/DiskCleaner-<version>.dmg for distribution outside the App Store: an Apple
+# silicon app signed with Developer ID and the hardened runtime, notarized by Apple and
+# stapled, so it opens without Gatekeeper warnings. One-time setup is described in README › Releasing.
 #
 # Usage: NOTARY_PROFILE=<profile> scripts/release.sh
 #        scripts/release.sh --skip-notarize   # local dry run, not for distribution
@@ -53,7 +53,7 @@ notarize() {
     echo "Notarized $1"
 }
 
-ARCHS="arm64 x86_64" SIGN_IDENTITY="$IDENTITY" CODESIGN_FLAGS="--options runtime --timestamp" ./scripts/build-app.sh
+ARCHS="arm64" SIGN_IDENTITY="$IDENTITY" CODESIGN_FLAGS="--options runtime --timestamp" ./scripts/build-app.sh
 codesign --verify --strict --verbose=2 "$APP"
 if [ "$SKIP_NOTARIZE" = 0 ]; then
     signed_team="$(codesign -dv "$APP" 2>&1 | awk -F= '/^TeamIdentifier=/ { print $2 }')"

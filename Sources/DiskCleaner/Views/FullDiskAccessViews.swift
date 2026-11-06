@@ -12,7 +12,7 @@ struct FullDiskAccessSheet: View {
                     .font(.system(size: 30))
                     .foregroundStyle(.orange)
                     .frame(width: 60, height: 60)
-                    .glassEffect(.regular.tint(.orange.opacity(0.2)), in: .circle)
+                    .glassBackground(in: .circle, tint: .orange.opacity(0.2))
                 Text("Allow Full Disk Access once")
                     .font(.title2.weight(.semibold))
             }
@@ -31,12 +31,12 @@ struct FullDiskAccessSheet: View {
             HStack {
                 Spacer()
                 Button("Scan Without It") { model.scanWithoutFullDiskAccess() }
-                    .buttonStyle(.glass)
+                    .glassButtonStyle()
                 Button("Open System Settings") {
                     FullDiskAccess.openSettings()
                     model.targetAwaitingAccess = nil
                 }
-                .buttonStyle(.glassProminent)
+                .prominentGlassButtonStyle()
                 .tint(theme.color)
                 .keyboardShortcut(.defaultAction)
             }
@@ -64,7 +64,7 @@ struct FullDiskAccessBanner: View {
             }
             Spacer(minLength: 8)
             Button("Open Settings") { FullDiskAccess.openSettings() }
-                .buttonStyle(.glass)
+                .glassButtonStyle()
         }
         .padding(16)
         .background(.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
@@ -83,7 +83,7 @@ struct FullDiskAccessCard: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             Button("Grant Access…") { FullDiskAccess.openSettings() }
-                .buttonStyle(.glass)
+                .glassButtonStyle()
                 .controlSize(.small)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -86,7 +86,7 @@ private struct Breadcrumb: View {
             }
             .padding(4)
         }
-        .glassEffect(.regular, in: .capsule)
+        .glassBackground(in: .capsule)
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
     }
