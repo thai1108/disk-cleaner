@@ -15,6 +15,10 @@ A disk space analyzer and cleaner for macOS: scan a disk or folder, see what tak
 - Disk overview with used, purgeable and free space, plus *System & Other* (space the scan can't see: macOS, snapshots, other users' files, skipped folders).
 - System folders and top-level home folders are protected from deletion.
 - Settings (⌘,): pick a color theme — Teal (default), Indigo, Violet, Coral or Graphite; it applies immediately.
+- Automatic updates with [Sparkle](https://sparkle-project.org): a daily check of the appcast attached
+  to the latest GitHub release, downloading and installing new versions in the background (both can be
+  turned off in Settings), plus *Check for Updates…* in the app menu. The version is in Settings and
+  *About*.
 
 ## Install
 
@@ -61,16 +65,27 @@ One-time setup:
    xcrun notarytool store-credentials disk-cleaner-notary --apple-id <your-apple-id> --team-id JKJ595QHBK
    ```
 
+4. Updates are signed with a Sparkle EdDSA key whose public half is `SUPublicEDKey` in
+   `Resources/Info.plist`. The private key lives only in the login keychain of the release Mac; back
+   it up somewhere safe (never in git), or installed copies can no longer be updated:
+
+   ```sh
+   .build/artifacts/sparkle/Sparkle/bin/generate_keys -x <backup-file>
+   ```
+
 Releases are signed for team `JKJ595QHBK`; `scripts/release.sh` refuses to sign with another
 team's certificate (set `TEAM_ID` to change it).
 
 Each release:
 
-1. Bump `CFBundleShortVersionString` and `CFBundleVersion` in `Resources/Info.plist`.
+1. In `Resources/Info.plist`, set `CFBundleShortVersionString` to the new semantic version
+   `MAJOR.MINOR.PATCH` (patch for fixes, minor for features, major for breaking changes) and
+   increase the `CFBundleVersion` build number by one. Releases are tagged `v<version>`.
 2. Run `NOTARY_PROFILE=disk-cleaner-notary ./scripts/release.sh`. It builds an Apple silicon app,
    signs it with Developer ID and the hardened runtime, notarizes and staples the app and
    the DMG, and checks both with Gatekeeper.
-3. Run `./scripts/publish.sh`. It uploads the DMG as release `v<version>` of this repo and
+3. Run `RELEASE_NOTES="<what changed>" ./scripts/publish.sh`. It signs the DMG for Sparkle, uploads
+   it with `appcast.xml` as release `v<version>` of this repo (installed apps update from it) and
    updates the cask in [thai1108/homebrew-tap](https://github.com/thai1108/homebrew-tap), using
    the `thai1108` gh account without switching the active one. `--dry-run` prints the cask.
 

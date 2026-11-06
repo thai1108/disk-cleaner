@@ -51,6 +51,7 @@ final class AppModel {
     private(set) var activeScan: ScanSession?
     private(set) var hasFullDiskAccess = FullDiskAccess.isGranted
     let quickClean = QuickClean()
+    let updater = Updater()
     /// Path of the location selected in the sidebar.
     var selection: String?
     var isChoosingFolder = false

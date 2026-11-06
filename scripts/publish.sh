@@ -1,9 +1,12 @@
 #!/bin/sh
-# Publishes the DMG made by scripts/release.sh: uploads it as a GitHub release of
-# <owner>/disk-cleaner and points the cask in <owner>/homebrew-tap at it, so that
+# Publishes the DMG made by scripts/release.sh: uploads it with a Sparkle appcast as a GitHub
+# release of <owner>/disk-cleaner (the app reads releases/latest/download/appcast.xml to
+# update itself) and points the cask in <owner>/homebrew-tap at it, so that
 # `brew install --cask <owner>/tap/disk-cleaner` installs it.
 #
-# Usage: scripts/publish.sh [--dry-run]   # --dry-run only prints the cask
+# Usage: RELEASE_NOTES="What changed" scripts/publish.sh [--dry-run]
+# --dry-run prints the cask and the appcast without publishing. Signing the appcast uses the
+# Sparkle key in the login keychain (see README › Releasing).
 # GITHUB_USER picks the gh account (default thai1108) without switching the active one.
 set -eu
 
@@ -17,7 +20,10 @@ TAP_REPO="$OWNER/homebrew-tap"
 CASK_PATH="Casks/disk-cleaner.rb"
 BUNDLE_ID="$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" Resources/Info.plist)"
 VERSION="$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Resources/Info.plist)"
+BUILD="$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" Resources/Info.plist)"
+MINIMUM_OS="$(/usr/libexec/PlistBuddy -c "Print :LSMinimumSystemVersion" Resources/Info.plist)"
 DMG="build/DiskCleaner-$VERSION.dmg"
+APPCAST="build/appcast.xml"
 
 if [ ! -f "$DMG" ]; then
     echo "error: $DMG not found; run scripts/release.sh first" >&2
@@ -53,6 +59,7 @@ cask "disk-cleaner" do
   desc "Disk space analyzer and cleaner"
   homepage "https://github.com/$APP_REPO"
 
+  auto_updates true
   depends_on arch: :arm64
   depends_on macos: :sonoma
 
@@ -66,16 +73,44 @@ end
 RUBY
 )"
 
+# Sparkle checks the EdDSA signature (and the Developer ID) before installing an update.
+SIGNATURE="$(.build/artifacts/sparkle/Sparkle/bin/sign_update "$DMG")"
+NOTES_HTML="$(printf '%s\n' "${RELEASE_NOTES:-Disk Cleaner $VERSION}" |
+    sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's|.*|<p>&</p>|')"
+cat > "$APPCAST" <<XML
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Disk Cleaner</title>
+    <item>
+      <title>Version $VERSION</title>
+      <pubDate>$(LC_ALL=C date -u '+%a, %d %b %Y %H:%M:%S +0000')</pubDate>
+      <sparkle:version>$BUILD</sparkle:version>
+      <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>$MINIMUM_OS</sparkle:minimumSystemVersion>
+      <description><![CDATA[$NOTES_HTML]]></description>
+      <enclosure url="https://github.com/$APP_REPO/releases/download/v$VERSION/DiskCleaner-$VERSION.dmg"
+                 type="application/octet-stream" $SIGNATURE />
+    </item>
+  </channel>
+</rss>
+XML
+xmllint --noout "$APPCAST"
+
 if [ "$DRY_RUN" = 1 ]; then
-    printf '%s\n' "$CASK"
+    printf '%s\n\n' "$CASK"
+    cat "$APPCAST"
     exit 0
 fi
 
 GH_TOKEN="$(gh auth token --user "$OWNER")"
 export GH_TOKEN
 
-gh release create "v$VERSION" "$DMG" --repo "$APP_REPO" --target "$(git rev-parse HEAD)" --title "Disk Cleaner $VERSION" \
-    --notes "Install with Homebrew: \`brew install --cask $OWNER/tap/disk-cleaner\`, or download the DMG below. SHA-256: \`$SHA256\`"
+INSTALL="Install with \`brew install --cask $OWNER/tap/disk-cleaner\`, update with \`brew upgrade --cask $OWNER/tap/disk-cleaner\`, or download the DMG below. SHA-256: \`$SHA256\`"
+gh release create "v$VERSION" "$DMG" "$APPCAST" --repo "$APP_REPO" --target "$(git rev-parse HEAD)" --title "Disk Cleaner $VERSION" \
+    --notes "${RELEASE_NOTES:+$RELEASE_NOTES
+
+}$INSTALL"
 
 # Updating through the API needs the current file's blob SHA, unless the cask is new.
 current_sha="$(gh api "repos/$TAP_REPO/contents/$CASK_PATH" --jq .sha 2> /dev/null || true)"

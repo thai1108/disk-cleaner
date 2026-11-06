@@ -2,9 +2,11 @@ import SwiftUI
 
 /// The app's Settings window (⌘,).
 struct SettingsView: View {
+    @Environment(AppModel.self) private var model
     @AppStorage(AppTheme.storageKey) private var theme: AppTheme = .teal
 
     var body: some View {
+        @Bindable var updater = model.updater
         Form {
             Section {
                 HStack(spacing: 12) {
@@ -21,12 +23,30 @@ struct SettingsView: View {
                 Text("Colors the sidebar selection, buttons, size bars and backgrounds.")
                     .foregroundStyle(.secondary)
             }
+            Section("Updates") {
+                LabeledContent("Version", value: Updater.versionDescription)
+                Toggle("Check for updates automatically", isOn: $updater.automaticallyChecks)
+                Toggle("Download and install updates automatically", isOn: $updater.automaticallyInstalls)
+                    .disabled(!updater.automaticallyChecks)
+                HStack {
+                    Text(lastCheckDescription)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Check Now") { updater.checkForUpdates() }
+                        .disabled(!updater.canCheckForUpdates)
+                }
+            }
         }
         .formStyle(.grouped)
         .frame(width: 560)
         .fixedSize(horizontal: false, vertical: true)
         .tint(theme.color)
         .environment(\.theme, theme)
+    }
+
+    private var lastCheckDescription: String {
+        model.updater.lastCheck.map { "Last checked \($0.formatted(.relative(presentation: .named)))" }
+            ?? "Not checked yet"
     }
 }
 

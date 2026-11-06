@@ -15,6 +15,10 @@ struct DiskCleanerApp: App {
         }
         .windowToolbarStyle(.unified(showsTitle: true))
         .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") { model.updater.checkForUpdates() }
+                    .disabled(!model.updater.canCheckForUpdates)
+            }
             CommandGroup(replacing: .newItem) {
                 Button("Scan Folder…") { model.isChoosingFolder = true }
                     .keyboardShortcut("o")
@@ -30,6 +34,7 @@ struct DiskCleanerApp: App {
 
         Settings {
             SettingsView()
+                .environment(model)
         }
     }
 }

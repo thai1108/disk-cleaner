@@ -37,6 +37,11 @@ if [ "$SKIP_NOTARIZE" = 0 ] && [ -z "${NOTARY_PROFILE:-}" ]; then
 fi
 
 VERSION="$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Resources/Info.plist)"
+# Releases are tagged v<MAJOR.MINOR.PATCH>, which the in-app update check compares.
+if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+    echo "error: CFBundleShortVersionString must be MAJOR.MINOR.PATCH, got '$VERSION'" >&2
+    exit 1
+fi
 APP="build/DiskCleaner.app"
 DMG="build/DiskCleaner-$VERSION.dmg"
 
