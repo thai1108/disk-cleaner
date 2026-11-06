@@ -1,0 +1,10 @@
+# Blocks commits and pushes that contain secrets. Enable once per clone: lefthook install
+pre-commit:
+  commands:
+    gitleaks:
+      run: gitleaks git --pre-commit --staged --redact --no-banner --verbose
+
+pre-push:
+  commands:
+    gitleaks:
+      run: gitleaks git --redact --no-banner
